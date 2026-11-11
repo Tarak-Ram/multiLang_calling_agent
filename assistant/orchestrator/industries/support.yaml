@@ -1,0 +1,70 @@
+# Customer-service industry (retail / e-commerce): order status, returns/refunds, complaints,
+# human handoff. Added with NO code changes: only flows + texts, on top of the same engine.
+industry: support
+
+menu:
+  - {id: order_status, flow: order_status}
+  - {id: return_request, flow: return_request}
+  - {id: human, action: human}      # complaints go straight to a person
+
+flows:
+  order_status:
+    slots:
+      - {name: order_id, prompt: ask_order_id, validate: token}
+    execute:                # read-only: answer as soon as we have the order id
+      tool: lookup_order
+      success: order_result
+      on_error:
+        not_found: {message: order_not_found, clear: [order_id]}
+
+  return_request:
+    slots:
+      - {name: order_id, prompt: ask_order_id,      validate: token}
+      - {name: reason,   prompt: ask_return_reason, validate: text}
+    confirm: {prompt: confirm_return}
+    execute:
+      tool: create_return
+      success: return_created
+      on_error:
+        not_found: {message: order_not_found, clear: [order_id]}
+        not_eligible: {message: return_not_eligible, then: handoff}
+
+messages:
+  menu_order_status:
+    en: "Order status"
+    hi: "ऑर्डर की स्थिति"
+    te: "ఆర్డర్ స్థితి"
+  menu_return_request:
+    en: "Return / refund"
+    hi: "रिटर्न / रिफंड"
+    te: "రిటర్న్ / రీఫండ్"
+  flow_order_status: {en: "checking an order", hi: "ऑर्डर देखना", te: "ఆర్డర్ చూడటం"}
+  flow_return_request: {en: "a return request", hi: "रिटर्न अनुरोध", te: "రిటర్న్ అభ్యర్థన"}
+  ask_order_id:
+    en: "Please send your order number."
+    hi: "कृपया अपना ऑर्डर नंबर भेजें।"
+    te: "దయచేసి మీ ఆర్డర్ నంబర్ పంపండి."
+  order_result:
+    en: "Order {order_id}: {status}. Expected: {eta}."
+    hi: "ऑर्डर {order_id}: {status}। अनुमानित: {eta}।"
+    te: "ఆర్డర్ {order_id}: {status}. అంచనా: {eta}."
+  order_not_found:
+    en: "I couldn't find that order for this phone number. Please check the number and send it again."
+    hi: "इस फ़ोन नंबर के लिए वह ऑर्डर नहीं मिला। कृपया नंबर जाँचकर दोबारा भेजें।"
+    te: "ఈ ఫోన్ నంబర్‌కు ఆ ఆర్డర్ కనపడలేదు. దయచేసి నంబర్ సరిచూసి మళ్ళీ పంపండి."
+  ask_return_reason:
+    en: "What is the reason for the return?"
+    hi: "रिटर्न का कारण क्या है?"
+    te: "రిటర్న్ కారణం ఏమిటి?"
+  confirm_return:
+    en: "Return order {order_id}? Reason: {reason}. Phone: {phone}."
+    hi: "ऑर्डर {order_id} रिटर्न करें? कारण: {reason}। फ़ोन: {phone}।"
+    te: "ఆర్డర్ {order_id} రిటర్న్ చేయాలా? కారణం: {reason}. ఫోన్: {phone}."
+  return_created:
+    en: "✅ Return request created. Reference: {ref}."
+    hi: "✅ रिटर्न अनुरोध बन गया। रेफ़रेंस: {ref}।"
+    te: "✅ రిటర్న్ అభ్యర్థన సృష్టించబడింది. రిఫరెన్స్: {ref}."
+  return_not_eligible:
+    en: "Sorry, this order is not eligible for a return. Our staff can look into it."
+    hi: "माफ़ कीजिए, यह ऑर्डर रिटर्न के योग्य नहीं है। हमारा स्टाफ इसे देख सकता है।"
+    te: "క్షమించండి, ఈ ఆర్డర్ రిటర్న్‌కు అర్హత లేదు. మా సిబ్బంది పరిశీలించగలరు."

@@ -1,0 +1,64 @@
+# Customer-service industry ("support"): same engine, different config. Order status, returns,
+# complaints, FAQs. Proves a new industry needs YAML only.
+- id: support_order_status_found
+  language: en
+  industry: support
+  tags: [orders]
+  setup: {orders: {A100: {status: Shipped, eta: Friday}}}
+  turns:
+    - {say: "where is my order", expect: {route: rule, intent: order_status, state: collect_slots, llm_calls: 0, replies_contain: ["order number"]}}
+    - {say: "A100", expect: {tool_calls: [lookup_order], state: close, status: closed, replies_contain: ["Order A100: Shipped", "Friday"], llm_calls: 0}}
+
+- id: support_order_not_found_asks_again
+  language: en
+  industry: support
+  tags: [orders]
+  turns:
+    - {say: "track my order"}
+    - {say: "ZZ999", expect: {tool_calls: [lookup_order], state: collect_slots, replies_contain: ["couldn't find that order"]}}
+
+- id: support_return_flow
+  language: en
+  industry: support
+  tags: [returns]
+  setup: {orders: {A100: {status: Delivered}}}
+  turns:
+    - {say: "I want a refund", expect: {intent: return_request, state: collect_slots}}
+    - {say: "A100", expect: {slots: {order_id: A100}, replies_contain: ["reason"]}}
+    - {say: "item arrived damaged", expect: {state: confirm, replies_contain: ["A100", "item arrived damaged", "+919876543210"]}}
+    - {say: "yes", expect: {tool_calls: [create_return], status: closed, replies_contain: ["Return request created", "RT-A100"]}}
+
+- id: support_return_not_eligible_goes_to_human
+  language: en
+  industry: support
+  tags: [returns, handoff]
+  setup: {orders: {A200: {status: Delivered, returnable: "no"}}}
+  turns:
+    - {say: "return"}
+    - {say: "A200"}
+    - {say: "changed my mind", expect: {state: confirm}}
+    - {say: "yes", expect: {tool_calls: [create_return], needs_human: true, handoff_reason: "tool_error:not_eligible", replies_contain: ["not eligible", "support team"]}}
+
+- id: support_complaint_goes_straight_to_a_person
+  language: en
+  industry: support
+  tags: [handoff]
+  turns:
+    - {say: "I have a complaint", expect: {intent: human, needs_human: true, replies_contain: ["support team"], llm_calls: 0}}
+
+- id: support_exact_faq_beats_return_keyword
+  language: en
+  industry: support
+  tags: [faq]
+  turns:
+    - {say: "What is your return policy?", expect: {route: faq, intent: faq, flow: null, llm_calls: 0, replies_contain: ["within 7 days"]}}
+
+- id: support_hindi_order_status
+  language: hi
+  industry: support
+  tags: [orders]
+  setup: {orders: {B700: {status: "भेजा गया", eta: "शुक्रवार"}}}
+  turns:
+    - {say: "ऑर्डर की स्थिति बताइए", expect: {intent: order_status, language: hi, replies_contain: ["ऑर्डर नंबर"]}}
+    - {say: "B7x1", expect: {replies_contain: ["नहीं मिला"], state: collect_slots}}
+    - {say: "B700", expect: {tool_calls: [lookup_order], replies_contain: ["भेजा गया"]}}

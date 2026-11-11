@@ -1,0 +1,152 @@
+# Clinic industry template: flows + clinic-specific texts (shared texts live in _common.yaml).
+# A new industry = a new file like this one; no code changes.
+industry: clinic
+
+menu:                       # shown on greeting; filtered by tenant.flows_enabled
+  - {id: book_appointment, flow: book_appointment}
+  - {id: reschedule, flow: reschedule}
+  - {id: cancel_appointment, flow: cancel_appointment}
+  - {id: report_status, flow: report_status}
+  - {id: human, action: human}
+
+flows:
+  book_appointment:
+    slots:
+      - {name: service,      prompt: ask_service,      options_tool: list_services, validate: option}
+      - {name: date,         prompt: ask_date,         options_tool: list_dates,    validate: option, revalidate: true}
+      - {name: time,         prompt: ask_time,         options_tool: list_slots,    validate: option, revalidate: true}
+      - {name: patient_name, prompt: ask_patient_name, validate: name}
+    confirm: {prompt: confirm_booking}
+    execute:
+      tool: book_appointment
+      success: booked
+      on_error:
+        slot_taken: {message: slot_unavailable, clear: [time]}
+        invalid_slot: {message: slot_unavailable, clear: [date, time]}
+
+  reschedule:
+    slots:
+      - {name: booking, prompt: ask_which_booking, options_tool: list_my_bookings, validate: option, revalidate: true, on_empty: no_bookings}
+      - {name: date,    prompt: ask_new_date,      options_tool: list_dates,       validate: option, revalidate: true}
+      - {name: time,    prompt: ask_new_time,      options_tool: list_slots,       validate: option, revalidate: true}
+    confirm: {prompt: confirm_reschedule}
+    execute:
+      tool: reschedule_booking
+      success: rescheduled
+      on_error:
+        slot_taken: {message: slot_unavailable, clear: [time]}
+        invalid_slot: {message: slot_unavailable, clear: [date, time]}
+        not_found: {message: booking_not_found, clear: [booking, date, time]}
+
+  cancel_appointment:
+    slots:
+      - {name: booking, prompt: ask_which_booking, options_tool: list_my_bookings, validate: option, revalidate: true, on_empty: no_bookings}
+    confirm: {prompt: confirm_cancel}
+    execute:
+      tool: cancel_booking
+      success: cancelled
+      on_error:
+        not_found: {message: booking_not_found, clear: [booking]}
+
+  report_status:
+    slots:
+      - {name: report_id, prompt: ask_report_id, validate: token}
+    execute:                # read-only: no confirmation step
+      tool: report_status
+      success: report_result
+      on_error:
+        not_found: {message: report_not_found, clear: [report_id]}
+
+messages:
+  menu_book_appointment:
+    en: "Book appointment"
+    hi: "अपॉइंटमेंट बुक करें"
+    te: "అపాయింట్‌మెంట్ బుక్"
+  menu_reschedule:
+    en: "Reschedule"
+    hi: "समय बदलें"
+    te: "సమయం మార్చండి"
+  menu_cancel_appointment:
+    en: "Cancel appointment"
+    hi: "अपॉइंटमेंट रद्द करें"
+    te: "అపాయింట్‌మెంట్ రద్దు"
+  menu_report_status:
+    en: "Report status"
+    hi: "रिपोर्ट की स्थिति"
+    te: "రిపోర్ట్ స్థితి"
+  flow_book_appointment: {en: "booking an appointment", hi: "अपॉइंटमेंट बुक करना", te: "అపాయింట్‌మెంట్ బుక్ చేయడం"}
+  flow_reschedule: {en: "rescheduling an appointment", hi: "अपॉइंटमेंट का समय बदलना", te: "అపాయింట్‌మెంట్ సమయం మార్చడం"}
+  flow_cancel_appointment: {en: "cancelling an appointment", hi: "अपॉइंटमेंट रद्द करना", te: "అపాయింట్‌మెంట్ రద్దు చేయడం"}
+  flow_report_status: {en: "checking a report", hi: "रिपोर्ट देखना", te: "రిపోర్ట్ చూడటం"}
+  ask_service:
+    en: "Which department would you like to see?"
+    hi: "आप किस विभाग में दिखाना चाहते हैं?"
+    te: "ఏ విభాగానికి అపాయింట్‌మెంట్ కావాలి?"
+  ask_date:
+    en: "Which date works for you?"
+    hi: "कौन सी तारीख ठीक रहेगी?"
+    te: "ఏ తేదీ కావాలి?"
+  ask_time:
+    en: "Which time would you prefer?"
+    hi: "कौन सा समय ठीक रहेगा?"
+    te: "ఏ సమయం కావాలి?"
+  ask_patient_name:
+    en: "Please tell me the patient's name."
+    hi: "कृपया मरीज़ का नाम बताइए।"
+    te: "దయచేసి రోగి పేరు చెప్పండి."
+  confirm_booking:
+    en: "Please confirm: {patient_name}, {service}, {date} at {time}. Phone: {phone}. Is this correct?"
+    hi: "कृपया पुष्टि करें: {patient_name}, {service}, {date}, {time}। फ़ोन: {phone}। क्या यह सही है?"
+    te: "దయచేసి నిర్ధారించండి: {patient_name}, {service}, {date}, {time}. ఫోన్: {phone}. సరైనదేనా?"
+  booked:
+    en: "✅ Booked: {service} on {date} at {time}. Reference: {ref}."
+    hi: "✅ बुकिंग हो गई: {service}, {date}, {time}। रेफ़रेंस: {ref}।"
+    te: "✅ అపాయింట్‌మెంట్ నిర్ధారించబడింది: {service}, {date}, {time}. రిఫరెన్స్: {ref}."
+  ask_which_booking:
+    en: "Which appointment?"
+    hi: "कौन सा अपॉइंटमेंट?"
+    te: "ఏ అపాయింట్‌మెంట్?"
+  no_bookings:
+    en: "You have no upcoming appointments."
+    hi: "आपका कोई आगामी अपॉइंटमेंट नहीं है।"
+    te: "మీకు రాబోయే అపాయింట్‌మెంట్లు లేవు."
+  booking_not_found:
+    en: "Sorry, I couldn't find that appointment."
+    hi: "माफ़ कीजिए, वह अपॉइंटमेंट नहीं मिला।"
+    te: "క్షమించండి, ఆ అపాయింట్‌మెంట్ కనపడలేదు."
+  confirm_cancel:
+    en: "Cancel your appointment on {booking}? Phone: {phone}."
+    hi: "क्या {booking} का आपका अपॉइंटमेंट रद्द करें? फ़ोन: {phone}।"
+    te: "{booking} నాటి మీ అపాయింట్‌మెంట్ రద్దు చేయాలా? ఫోన్: {phone}."
+  cancelled:
+    en: "Your appointment is cancelled. Reference: {ref}."
+    hi: "आपका अपॉइंटमेंट रद्द हो गया। रेफ़रेंस: {ref}।"
+    te: "మీ అపాయింట్‌మెంట్ రద్దు చేయబడింది. రిఫరెన్స్: {ref}."
+  ask_new_date:
+    en: "Which new date works for you?"
+    hi: "नई तारीख कौन सी ठीक रहेगी?"
+    te: "కొత్త తేదీ ఏది కావాలి?"
+  ask_new_time:
+    en: "Which new time would you prefer?"
+    hi: "नया समय कौन सा ठीक रहेगा?"
+    te: "కొత్త సమయం ఏది కావాలి?"
+  confirm_reschedule:
+    en: "Move your appointment from {booking} to {date} at {time}? Phone: {phone}."
+    hi: "क्या अपॉइंटमेंट {booking} से {date}, {time} पर ले जाएँ? फ़ोन: {phone}।"
+    te: "అపాయింట్‌మెంట్‌ను {booking} నుండి {date}, {time} కి మార్చాలా? ఫోన్: {phone}."
+  rescheduled:
+    en: "✅ Rescheduled to {date} at {time}. Reference: {ref}."
+    hi: "✅ समय बदल गया: {date}, {time}। रेफ़रेंस: {ref}।"
+    te: "✅ సమయం మార్చబడింది: {date}, {time}. రిఫరెన్స్: {ref}."
+  ask_report_id:
+    en: "Please send your report reference number."
+    hi: "कृपया अपना रिपोर्ट रेफ़रेंस नंबर भेजें।"
+    te: "దయచేసి మీ రిపోర్ట్ రిఫరెన్స్ నంబర్ పంపండి."
+  report_result:
+    en: "Your report status: {status}."
+    hi: "आपकी रिपोर्ट की स्थिति: {status}।"
+    te: "మీ రిపోర్ట్ స్థితి: {status}."
+  report_not_found:
+    en: "I couldn't find that report. Please check the number and send it again."
+    hi: "वह रिपोर्ट नहीं मिली। कृपया नंबर जाँचकर दोबारा भेजें।"
+    te: "ఆ రిపోర్ట్ కనపడలేదు. దయచేసి నంబర్ సరిచూసి మళ్ళీ పంపండి."

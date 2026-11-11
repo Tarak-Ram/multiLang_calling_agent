@@ -1,0 +1,53 @@
+[project]
+name = "assistant"
+version = "0.1.0"
+description = "Multi-tenant, multi-language AI customer assistant platform"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.8",
+  "pydantic-settings>=2.4",
+  "sqlalchemy[asyncio]>=2.0.32",
+  "asyncpg>=0.29",
+  "alembic>=1.13",
+  "pgvector>=0.3",
+  "redis>=5.0",
+  "arq>=0.26",
+  "httpx>=0.27",
+  "pyyaml>=6.0",
+  "tzdata>=2024.1",
+  "litellm>=1.50",
+  "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+dev = ["fakeredis[lua]>=2.23", "pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.6", "mypy>=1.11", "types-PyYAML"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["assistant*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"assistant/jobs/worker.py" = ["RUF012"]
+
+[tool.ruff]
+extend-exclude = ["migrations/versions"]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.setuptools.package-data]
+assistant = ["**/*.yaml"]

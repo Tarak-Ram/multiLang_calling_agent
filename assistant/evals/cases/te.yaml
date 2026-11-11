@@ -1,0 +1,98 @@
+# Telugu clinic conversations (incl. code-mixed Telugu + English and romanized Telugu).
+- id: te_book_full
+  language: te
+  tags: [booking, happy-path]
+  turns:
+    - {say: "నమస్కారం", expect: {route: rule, intent: menu, language: te, llm_calls: 0, options_include: ["menu:book_appointment"], replies_contain: ["సహాయం"]}}
+    - {payload: "menu:book_appointment", expect: {intent: book_appointment, options_include: [general, derm]}}
+    - {payload: general}
+    - {payload: "2026-11-13"}
+    - {payload: "10:00", expect: {replies_contain: ["రోగి పేరు"]}}
+    - {say: "రవి కుమార్", expect: {state: confirm, replies_contain: ["రవి కుమార్", "జనరల్ ఫిజీషియన్", "సరైనదేనా"]}}
+    - {say: "అవును", expect: {state: close, tool_calls: [book_appointment], bookings: 1, replies_contain: ["నిర్ధారించబడింది", "BK1"], llm_calls: 0}}
+
+- id: te_code_mixed_request
+  language: te
+  tags: [booking, code-mixed]
+  turns:
+    - {say: "నాకు appointment కావాలి", expect: {route: rule, intent: book_appointment, language: te, state: collect_slots, llm_calls: 0, replies_contain: ["విభాగానికి"]}}
+
+- id: te_native_script_keyword
+  language: te
+  tags: [booking, rules]
+  turns:
+    - {say: "అపాయింట్‌మెంట్ బుక్ చేయాలి", expect: {route: rule, intent: book_appointment, language: te, llm_calls: 0}}   # contains a ZWNJ
+
+- id: te_romanized_request_needs_llm_for_language
+  language: te
+  tags: [llm, code-mixed, romanized]
+  turns:
+    - say: "nenu doctor ni kalavali"   # Latin letters: rules say 'en'; the LLM corrects to Telugu
+      extraction: {intent: book_appointment, confidence: 0.92, language: te}
+      expect: {route: extractor, intent: book_appointment, language: te, replies_contain: ["విభాగానికి"], llm_calls: 1}
+
+- id: te_confirm_no
+  language: te
+  tags: [booking]
+  turns:
+    - {say: "అపాయింట్‌మెంట్ కావాలి", expect: {intent: book_appointment}}
+    - {payload: derm}
+    - {payload: "2026-11-14"}
+    - {payload: "12:00"}
+    - {say: "శ్రీనివాస రావు", expect: {state: confirm}}
+    - {say: "కాదు", expect: {state: collect_slots, bookings: 0, replies_contain: ["మళ్ళీ మొదలుపెడదాం"]}}
+
+- id: te_slot_lost_race
+  language: te
+  tags: [booking, race]
+  setup: {race_on_book: true}
+  turns:
+    - {say: "అపాయింట్‌మెంట్ కావాలి"}
+    - {payload: general}
+    - {payload: "2026-11-13"}
+    - {payload: "10:00"}
+    - {say: "రవి కుమార్", expect: {state: confirm}}
+    - {say: "అవును", expect: {bookings: 0, state: collect_slots, replies_contain: ["అందుబాటులో లేదు"]}}
+
+- id: te_cancel
+  language: te
+  tags: [cancel]
+  setup: {bookings: [{date: "2026-11-13", time: "10:00"}]}
+  turns:
+    - {say: "అపాయింట్‌మెంట్ రద్దు చేయాలి", expect: {route: rule, intent: cancel_appointment, language: te, options_include: [BK1]}}
+    - {payload: "BK1", expect: {state: confirm}}
+    - {say: "అవును", expect: {tool_calls: [cancel_booking], bookings: 0, replies_contain: ["రద్దు చేయబడింది"]}}
+
+- id: te_faq_timings
+  language: te
+  tags: [faq]
+  turns:
+    - {say: "మీ టైమింగ్స్ ఏమిటి?", expect: {route: faq, intent: faq, language: te, llm_calls: 0, replies_contain: ["ఉదయం 9"]}}
+
+- id: te_medical_question_refused
+  language: te
+  tags: [safety, medical]
+  turns:
+    - {say: "నాకు జ్వరం ఉంది", expect: {intent: medical_advice, needs_human: true, language: te, llm_calls: 0, replies_contain: ["వైద్య సలహా"]}}
+
+- id: te_human_requested
+  language: te
+  tags: [handoff]
+  turns:
+    - {say: "సిబ్బందితో మాట్లాడాలి", expect: {intent: human, needs_human: true, replies_contain: ["సిబ్బందికి"]}}
+
+- id: te_voice_note
+  language: te
+  tags: [robustness]
+  turns:
+    - {say: "హలో", expect: {language: te}}
+    - {expect: {replies_contain: ["టెక్స్ట్"]}}
+
+- id: te_rag_unknown
+  language: te
+  tags: [rag, safety]
+  turns:
+    - say: "మీ దగ్గర డయాలసిస్ ఉందా"
+      extraction: {intent: faq, confidence: 0.9, language: te}
+      answer: {text: null}
+      expect: {intent: faq_unknown, needs_human: false, replies_contain: ["సమాచారం లేదు"], options_include: ["menu:human"]}

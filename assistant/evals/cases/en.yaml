@@ -1,0 +1,200 @@
+# English clinic conversations. A turn with neither `say` nor `payload` is a voice note / image.
+- id: en_book_full
+  language: en
+  tags: [booking, happy-path]
+  turns:
+    - {say: "hello", expect: {route: rule, intent: menu, state: identify_intent, language: en, llm_calls: 0, options_include: ["menu:book_appointment", "menu:human"], replies_contain: ["How can I help"]}}
+    - {payload: "menu:book_appointment", expect: {intent: book_appointment, state: collect_slots, options_include: [general, derm], tool_calls: []}}
+    - {payload: "general", expect: {slots: {service: general}, options_include: ["2026-11-13", "2026-11-14"]}}
+    - {payload: "2026-11-13", expect: {slots: {date: "2026-11-13"}, options_include: ["10:00", "11:00", "12:00"]}}
+    - {payload: "11:00", expect: {state: collect_slots, replies_contain: ["patient's name"]}}
+    - {say: "Ravi Kumar", expect: {state: confirm, bookings: 0, tool_calls: [], replies_contain: ["Ravi Kumar", "General Physician", "+919876543210", "Is this correct"]}}
+    - {say: "yes", expect: {state: close, status: closed, tool_calls: [book_appointment], bookings: 1, llm_calls: 0, replies_contain: ["Booked", "BK1"]}}
+
+- id: en_keyword_shortcut_and_typed_options
+  language: en
+  tags: [booking, rules]
+  turns:
+    - {say: "I want to book an appointment", expect: {route: rule, intent: book_appointment, state: collect_slots, llm_calls: 0}}
+    - {say: "dermatology", expect: {slots: {service: derm}}}
+    - {say: "2", expect: {slots: {date: "2026-11-14"}}}   # typing the option number works too
+    - {say: "12:00", expect: {slots: {time: "12:00"}}}
+
+- id: en_confirm_no_restarts
+  language: en
+  tags: [booking]
+  turns:
+    - {say: "book appointment", expect: {intent: book_appointment}}
+    - {payload: general}
+    - {payload: "2026-11-13"}
+    - {payload: "10:00"}
+    - {say: "Anita Rao", expect: {state: confirm}}
+    - {say: "no", expect: {state: collect_slots, bookings: 0, tool_calls: [], replies_contain: ["start again"], options_include: [general, derm]}}
+
+- id: en_slot_already_taken_not_offered
+  language: en
+  tags: [booking, availability]
+  setup: {taken: [["2026-11-13", "10:00"]]}
+  turns:
+    - {say: "book appointment"}
+    - {payload: general}
+    - {payload: "2026-11-13", expect: {options_include: ["11:00", "12:00"], options_exclude: ["10:00"]}}
+
+- id: en_slot_lost_race_at_booking
+  language: en
+  tags: [booking, race]
+  setup: {race_on_book: true}
+  turns:
+    - {say: "book appointment"}
+    - {payload: general}
+    - {payload: "2026-11-13"}
+    - {payload: "10:00"}
+    - {say: "Ravi Kumar", expect: {state: confirm}}
+    - {say: "yes", expect: {state: collect_slots, bookings: 0, tool_calls: [book_appointment], replies_contain: ["no longer available"]}}
+
+- id: en_cancel_appointment
+  language: en
+  tags: [cancel]
+  setup: {bookings: [{date: "2026-11-13", time: "10:00"}]}
+  turns:
+    - {say: "cancel my appointment", expect: {route: rule, intent: cancel_appointment, options_include: [BK1], llm_calls: 0}}
+    - {payload: "BK1", expect: {state: confirm, replies_contain: ["Cancel your appointment"]}}
+    - {say: "yes", expect: {tool_calls: [cancel_booking], bookings: 0, status: closed, replies_contain: ["cancelled", "BK1"]}}
+
+- id: en_cancel_with_no_appointments
+  language: en
+  tags: [cancel]
+  turns:
+    - {say: "cancel appointment", expect: {intent: menu, replies_contain: ["no upcoming appointments"], options_include: ["menu:book_appointment"]}}
+
+- id: en_reschedule
+  language: en
+  tags: [reschedule]
+  setup: {bookings: [{date: "2026-11-13", time: "10:00"}]}
+  turns:
+    - {say: "I want to reschedule", expect: {intent: reschedule, options_include: [BK1]}}
+    - {payload: "BK1"}
+    - {payload: "2026-11-14"}
+    - {payload: "12:00", expect: {state: confirm, replies_contain: ["Move your appointment"]}}
+    - {say: "yes", expect: {tool_calls: [reschedule_booking], bookings: 1, replies_contain: ["Rescheduled"]}}
+
+- id: en_faq_exact_costs_nothing
+  language: en
+  tags: [faq]
+  turns:
+    - {say: "What are your timings?", expect: {route: faq, intent: faq, llm_calls: 0, replies_contain: ["9am-6pm"], tool_calls: []}}
+
+- id: en_faq_lexical_variant
+  language: en
+  tags: [faq]
+  turns:
+    - {say: "your timings", expect: {route: faq, intent: faq, llm_calls: 0, replies_contain: ["9am-6pm"]}}
+
+- id: en_faq_question_in_the_middle_of_booking
+  language: en
+  tags: [faq, booking]
+  turns:
+    - {say: "book appointment", expect: {intent: book_appointment}}
+    - {say: "What are your timings?", expect: {route: faq, state: collect_slots, llm_calls: 0, replies_contain: ["9am-6pm", "Which department"]}}
+    - {payload: general, expect: {slots: {service: general}}}
+
+- id: en_medical_question_refused
+  language: en
+  tags: [safety, medical]
+  turns:
+    - {say: "what medicine should I take for fever", expect: {route: rule, intent: medical_advice, needs_human: true, status: handoff, llm_calls: 0, replies_contain: ["can't give medical advice", "Connecting you"], replies_not_contain: ["paracetamol", "mg"]}}
+    - {say: "hello?", expect: {route: human_owned, reply_count: 0}}
+
+- id: en_medical_question_caught_by_llm
+  language: en
+  tags: [safety, medical, llm]
+  turns:
+    - {say: "is it ok to take two tablets together", extraction: {intent: medical_advice, confidence: 0.92}, expect: {intent: medical_advice, needs_human: true, handoff_reason: medical_question, llm_calls: 1}}
+
+- id: en_human_requested_during_open_hours
+  language: en
+  tags: [handoff]
+  turns:
+    - {say: "talk to staff", expect: {intent: human, needs_human: true, replies_contain: ["Connecting you to our staff."], llm_calls: 0}}
+
+- id: en_human_requested_when_closed
+  language: en
+  tags: [handoff, hours]
+  setup: {now: "2026-11-15T06:00:00+00:00"}   # Sunday: clinic closed
+  turns:
+    - {say: "talk to staff", expect: {needs_human: true, replies_contain: ["closed"]}}
+
+- id: en_unclear_answers_then_handoff
+  language: en
+  tags: [handoff, robustness, llm]
+  turns:
+    - {say: "book appointment"}
+    # gibberish reaches the LLM, which (correctly) cannot help: low confidence is ignored
+    - {say: "asdf qwer", extraction: {confidence: 0.2}, expect: {replies_contain: ["didn't get that"], llm_calls: 1}}
+    - {say: "zxcv", extraction: {confidence: 0.1}, expect: {replies_contain: ["didn't get that"], llm_calls: 1}}
+    - {say: "lorem ipsum", extraction: {confidence: 0.2}, expect: {needs_human: true, handoff_reason: "unclear:service", status: handoff, llm_calls: 1}}
+
+- id: en_voice_note
+  language: en
+  tags: [robustness]
+  turns:
+    - {say: "hello"}
+    - {expect: {replies_contain: ["only read text"], llm_calls: 0}}
+
+- id: en_menu_resets_flow
+  language: en
+  tags: [rules]
+  turns:
+    - {say: "book appointment", expect: {flow: book_appointment}}
+    - {say: "menu", expect: {intent: menu, flow: null, state: identify_intent, options_include: ["menu:book_appointment"]}}
+
+- id: en_llm_fills_service_and_date_from_free_text
+  language: en
+  tags: [llm, booking]
+  turns:
+    - say: "I need to see a skin doctor on saturday"
+      extraction: {intent: book_appointment, slots: {service: derm, date: "2026-11-14"}, confidence: 0.93, tokens_in: 210, tokens_out: 28}
+      expect: {route: extractor, intent: book_appointment, slots: {service: derm, date: "2026-11-14"}, state: collect_slots, options_include: ["10:00", "11:00"], llm_calls: 1}
+    - {payload: "11:00", expect: {llm_calls: 0}}
+
+- id: en_llm_invented_date_is_rejected
+  language: en
+  tags: [llm, safety]
+  turns:
+    - say: "something for christmas day please"   # no keyword: only the LLM can route this
+      extraction: {intent: book_appointment, slots: {service: general, date: "2026-12-25"}, confidence: 0.9}
+      expect: {intent: book_appointment, slots: {service: general}, options_include: ["2026-11-13"], llm_calls: 1}
+
+- id: en_llm_low_confidence_is_ignored
+  language: en
+  tags: [llm, robustness]
+  turns:
+    - say: "hmm maybe something"
+      extraction: {intent: book_appointment, confidence: 0.3}
+      expect: {intent: menu, flow: null, llm_calls: 1, replies_contain: ["didn't get that"]}
+
+- id: en_llm_flags_complaint
+  language: en
+  tags: [llm, handoff]
+  turns:
+    - say: "this is the worst service I have ever had"
+      extraction: {needs_human: true, confidence: 0.95}
+      expect: {needs_human: true, handoff_reason: extractor_needs_human, llm_calls: 1}
+
+- id: en_rag_answer_from_knowledge_base
+  language: en
+  tags: [rag, llm]
+  turns:
+    - say: "do you accept insurance"
+      extraction: {intent: faq, confidence: 0.9}
+      answer: {text: "Yes, we accept major health insurance cards at the reception."}
+      expect: {route: rag, intent: faq, replies_contain: ["insurance"], llm_calls: 2}
+
+- id: en_rag_unknown_says_so_and_offers_human
+  language: en
+  tags: [rag, safety]
+  turns:
+    - say: "do you treat dinosaurs"
+      extraction: {intent: faq, confidence: 0.9}
+      answer: {text: null}
+      expect: {route: unknown, intent: faq_unknown, needs_human: false, options_include: ["menu:human"], replies_contain: ["don't have that information"]}

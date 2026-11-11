@@ -1,0 +1,46 @@
+slug: demo-store
+name: Demo Store
+industry: support
+whatsapp_phone_number_id: "000000000000001"   # replace with Meta phone_number_id
+config:
+  timezone: Asia/Kolkata
+  default_language: en
+  languages:
+    - code: en
+      name: English
+      greetings: ["hi", "hello", "hey"]
+      "yes": ["yes", "y", "ok", "okay", "sure"]
+      "no": ["no", "n", "nope"]
+      keywords:
+        order_status: ["order status", "where is my order", "track", "my order"]
+        return_request: ["return", "refund", "send back"]
+        human: ["human", "agent", "staff", "complaint", "talk to someone"]
+        menu: ["menu", "start over"]
+    - code: hi
+      name: Hindi
+      greetings: ["नमस्ते", "हेलो"]
+      "yes": ["हाँ", "हां", "ठीक है", "जी"]
+      "no": ["नहीं", "ना"]
+      keywords:
+        order_status: ["ऑर्डर कहाँ", "ऑर्डर की स्थिति", "ट्रैक"]
+        return_request: ["रिटर्न", "रिफंड", "वापस"]
+        human: ["स्टाफ", "शिकायत", "इंसान"]
+  business_hours:
+    mon: {open: "09:00", close: "21:00"}
+    tue: {open: "09:00", close: "21:00"}
+    wed: {open: "09:00", close: "21:00"}
+    thu: {open: "09:00", close: "21:00"}
+    fri: {open: "09:00", close: "21:00"}
+    sat: {open: "10:00", close: "18:00"}
+  flows_enabled: [order_status, return_request, faq]
+  tools_enabled: [orders, crm, messaging]
+  escalation:
+    message:
+      en: "Connecting you to our support team."
+      hi: "मैं आपको हमारी सपोर्ट टीम से जोड़ रहा हूँ।"
+  # integrations:             # tenant-owned HTTPS endpoints used by the order tools
+  #   orders:  {url: "https://api.example-store.in/orders",  secret_env: "STORE_ORDERS_TOKEN"}
+  #   returns: {url: "https://api.example-store.in/returns", secret_env: "STORE_ORDERS_TOKEN"}
+faqs:
+  - {language: en, question: "What is your return policy?", answer: "Items can be returned within 7 days of delivery in original condition."}
+  - {language: hi, question: "आपकी रिटर्न पॉलिसी क्या है?", answer: "डिलीवरी के 7 दिनों के भीतर मूल स्थिति में सामान वापस किया जा सकता है।"}

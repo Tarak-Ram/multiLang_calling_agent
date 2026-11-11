@@ -1,0 +1,90 @@
+# Hindi clinic conversations (incl. code-mixed Hindi + English).
+- id: hi_book_full
+  language: hi
+  tags: [booking, happy-path]
+  turns:
+    - {say: "नमस्ते", expect: {route: rule, intent: menu, language: hi, llm_calls: 0, options_include: ["menu:book_appointment"], replies_contain: ["मदद"]}}
+    - {payload: "menu:book_appointment", expect: {intent: book_appointment, options_include: [general, derm]}}
+    - {payload: general}
+    - {payload: "2026-11-13", expect: {options_include: ["10:00"]}}
+    - {payload: "10:00", expect: {replies_contain: ["मरीज़ का नाम"]}}
+    - {say: "रवि कुमार", expect: {state: confirm, replies_contain: ["रवि कुमार", "सामान्य चिकित्सक", "क्या यह सही है"]}}
+    - {say: "हाँ", expect: {state: close, tool_calls: [book_appointment], bookings: 1, replies_contain: ["बुकिंग हो गई", "BK1"], llm_calls: 0}}
+
+- id: hi_code_mixed_request
+  language: hi
+  tags: [booking, code-mixed]
+  turns:
+    - {say: "मुझे appointment चाहिए", expect: {route: rule, intent: book_appointment, language: hi, state: collect_slots, llm_calls: 0, replies_contain: ["विभाग"]}}
+
+- id: hi_confirm_no
+  language: hi
+  tags: [booking]
+  turns:
+    - {say: "अपॉइंटमेंट बुक करना है", expect: {intent: book_appointment}}
+    - {payload: derm}
+    - {payload: "2026-11-14"}
+    - {payload: "11:00"}
+    - {say: "सुनीता शर्मा", expect: {state: confirm}}
+    - {say: "नहीं", expect: {state: collect_slots, bookings: 0, replies_contain: ["दोबारा शुरू"]}}
+
+- id: hi_slot_lost_race
+  language: hi
+  tags: [booking, race]
+  setup: {race_on_book: true}
+  turns:
+    - {say: "अपॉइंटमेंट बुक करना है"}
+    - {payload: general}
+    - {payload: "2026-11-13"}
+    - {payload: "10:00"}
+    - {say: "रवि कुमार", expect: {state: confirm}}
+    - {say: "हाँ", expect: {bookings: 0, state: collect_slots, replies_contain: ["अब उपलब्ध नहीं"]}}
+
+- id: hi_cancel
+  language: hi
+  tags: [cancel]
+  setup: {bookings: [{date: "2026-11-13", time: "11:00"}]}
+  turns:
+    - {say: "अपॉइंटमेंट रद्द करना है", expect: {route: rule, intent: cancel_appointment, language: hi, options_include: [BK1]}}
+    - {payload: "BK1", expect: {state: confirm}}
+    - {say: "हाँ", expect: {tool_calls: [cancel_booking], bookings: 0, replies_contain: ["रद्द हो गया"]}}
+
+- id: hi_faq_timings
+  language: hi
+  tags: [faq]
+  turns:
+    - {say: "आपका समय क्या है?", expect: {route: faq, intent: faq, language: hi, llm_calls: 0, replies_contain: ["सोम-शुक्र"]}}
+
+- id: hi_medical_question_refused
+  language: hi
+  tags: [safety, medical]
+  turns:
+    - {say: "मुझे बुखार है कौन सी दवा लूँ", expect: {intent: medical_advice, needs_human: true, language: hi, llm_calls: 0, replies_contain: ["चिकित्सा सलाह नहीं"]}}
+
+- id: hi_human_requested
+  language: hi
+  tags: [handoff]
+  turns:
+    - {say: "मुझे स्टाफ से बात करनी है", expect: {intent: human, needs_human: true, replies_contain: ["स्टाफ से जोड़"]}}
+
+- id: hi_human_requested_when_closed
+  language: hi
+  tags: [handoff, hours]
+  setup: {now: "2026-11-15T06:00:00+00:00"}
+  turns:
+    - {say: "मुझे स्टाफ से बात करनी है", expect: {needs_human: true, replies_contain: ["बंद"]}}
+
+- id: hi_voice_note
+  language: hi
+  tags: [robustness]
+  turns:
+    - {say: "नमस्ते", expect: {language: hi}}
+    - {expect: {replies_contain: ["टेक्स्ट"]}}
+
+- id: hi_llm_free_text_booking
+  language: hi
+  tags: [llm, booking]
+  turns:
+    - say: "kal subah doctor se milna hai"   # romanized Hindi: only the LLM can route this
+      extraction: {intent: book_appointment, slots: {service: general}, confidence: 0.9, language: hi}
+      expect: {route: extractor, intent: book_appointment, language: hi, slots: {service: general}, replies_contain: ["तारीख"], llm_calls: 1}

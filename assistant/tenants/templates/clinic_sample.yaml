@@ -1,0 +1,99 @@
+slug: demo-clinic
+name: Demo Clinic
+industry: clinic
+whatsapp_phone_number_id: "000000000000000"   # replace with Meta phone_number_id
+config:
+  timezone: Asia/Kolkata
+  default_language: te
+  languages:
+    - code: te
+      name: Telugu
+      greetings: ["నమస్కారం", "హలో", "namaste"]
+      "yes": ["అవును", "సరే", "ఓకే", "ok"]
+      "no": ["కాదు", "వద్దు", "లేదు"]
+      keywords:
+        book_appointment: ["అపాయింట్‌మెంట్", "అపాయింట్మెంట్", "బుక్"]
+        cancel_appointment: ["అపాయింట్‌మెంట్ రద్దు", "రద్దు"]
+        human: ["సిబ్బంది", "మనిషి"]
+        menu: ["మెను"]
+        medical_advice: ["మందు", "మాత్ర", "లక్షణాలు", "జ్వరం", "నొప్పి"]
+    - code: hi
+      name: Hindi
+      greetings: ["नमस्ते", "हेलो", "namaste"]
+      "yes": ["हाँ", "हां", "ठीक है", "जी"]
+      "no": ["नहीं", "ना"]
+      keywords:
+        book_appointment: ["अपॉइंटमेंट", "अपोइंटमेंट", "बुक", "बुकिंग"]
+        cancel_appointment: ["अपॉइंटमेंट रद्द", "रद्द", "कैंसिल"]
+        human: ["स्टाफ", "इंसान", "किसी से बात"]
+        menu: ["मेन्यू"]
+        medical_advice: ["दवा", "दवाई", "लक्षण", "बुखार", "दर्द"]
+    - code: en
+      name: English
+      greetings: ["hi", "hello", "hey"]
+      "yes": ["yes", "y", "ok", "okay", "sure"]
+      "no": ["no", "n", "nope"]
+      keywords:
+        book_appointment: ["appointment", "book", "booking", "consult"]
+        reschedule: ["reschedule", "change my appointment"]
+        cancel_appointment: ["cancel appointment", "cancel my appointment", "cancel"]
+        human: ["human", "agent", "staff", "talk to someone", "call me"]
+        menu: ["menu", "start over", "restart"]
+        medical_advice: ["medicine", "dose", "symptom", "prescription", "diagnos", "fever", "pain"]
+  business_hours:
+    mon: {open: "09:00", close: "18:00"}
+    tue: {open: "09:00", close: "18:00"}
+    wed: {open: "09:00", close: "18:00"}
+    thu: {open: "09:00", close: "18:00"}
+    fri: {open: "09:00", close: "18:00"}
+    sat: {open: "09:00", close: "13:00"}
+  flows_enabled: [book_appointment, reschedule, cancel_appointment, faq]  # + report_status once `integrations.reports` exists
+  tools_enabled: [booking, messaging]
+  booking:
+    slot_minutes: 30
+    horizon_days: 7
+    min_lead_minutes: 60
+    calendar_id: null          # set to a Google Calendar id to mirror bookings (see tools/calendar.py)
+    services:
+      - id: general
+        resource: dr-rao
+        duration_minutes: 30
+        names: {en: "General Physician", hi: "सामान्य चिकित्सक", te: "జనరల్ ఫిజీషియన్"}
+      - id: derm
+        resource: dr-devi
+        duration_minutes: 30
+        names: {en: "Dermatology", hi: "त्वचा रोग", te: "చర్మ వైద్యం"}
+  # integrations:             # tenant-owned HTTPS endpoints for order/report/CRM tools
+  #   reports: {url: "https://api.example-clinic.in/reports", secret_env: "CLINIC_REPORTS_TOKEN"}
+  escalation:
+    phone: "+910000000000"
+    message:
+      te: "మా సిబ్బందికి కనెక్ట్ చేస్తున్నాను."
+      hi: "मैं आपको हमारे स्टाफ से जोड़ रहा हूँ।"
+      en: "Connecting you to our staff."
+  thresholds: {intent_confidence: 0.75, cache_similarity: 0.92, rag_min_score: 0.55}
+  timing: {reminder_after_hours: 4, expire_after_hours: 24}
+  templates:
+    reminder: clinic_reminder_v1
+    booking_confirmation: clinic_booking_confirm_v1
+faqs:
+  - {language: en, question: "What are your timings?", answer: "We are open Mon-Fri 9am-6pm and Sat 9am-1pm."}
+  - {language: hi, question: "आपका समय क्या है?", answer: "हम सोम-शुक्र सुबह 9 से शाम 6 और शनिवार सुबह 9 से दोपहर 1 बजे तक खुले हैं।"}
+  - {language: te, question: "మీ టైమింగ్స్ ఏమిటి?", answer: "మేము సోమ-శుక్ర ఉదయం 9 నుండి సాయంత్రం 6 వరకు, శనివారం ఉదయం 9 నుండి మధ్యాహ్నం 1 వరకు తెరిచి ఉంటాము."}
+documents:
+  - title: Consultation fees
+    language: en
+    text: |
+      General physician consultation costs 500 rupees. Dermatology consultation costs 800 rupees.
+      A follow-up visit within 7 days of the first visit is free.
+
+      Payment is accepted by cash, UPI and cards at the reception.
+  - title: Location and parking
+    language: en
+    text: |
+      The clinic is on the second floor of Lakeview Plaza, Banjara Hills, Hyderabad.
+      Free parking is available in the basement. The lift is available for wheelchair users.
+  - title: వైద్య రుసుము
+    language: te
+    text: |
+      జనరల్ ఫిజీషియన్ కన్సల్టేషన్ ఫీజు 500 రూపాయలు. చర్మ వైద్య నిపుణుల ఫీజు 800 రూపాయలు.

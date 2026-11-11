@@ -1,0 +1,65 @@
+# Texts shared by every industry. An industry file may override any key.
+# Keep every text SHORT (1-3 sentences) and approved. {placeholders} come from slots/tool data.
+messages:
+  greeting:
+    en: "Hello! How can I help you today?"
+    hi: "नमस्ते! मैं आपकी कैसे मदद कर सकता हूँ?"
+    te: "నమస్కారం! నేను మీకు ఎలా సహాయం చేయగలను?"
+  choose:                    # list-button label (max 20 chars)
+    en: "Choose"
+    hi: "चुनें"
+    te: "ఎంచుకోండి"
+  menu_human:                # list row title (max 24 chars)
+    en: "Talk to staff"
+    hi: "स्टाफ से बात करें"
+    te: "సిబ్బందితో మాట్లాడండి"
+  btn_yes: {en: "Yes", hi: "हाँ", te: "అవును"}
+  btn_no:  {en: "No",  hi: "नहीं", te: "కాదు"}
+  didnt_understand:
+    en: "Sorry, I didn't get that. Please pick one of the options."
+    hi: "माफ़ कीजिए, समझ नहीं आया। कृपया एक विकल्प चुनें।"
+    te: "క్షమించండి, అర్థం కాలేదు. దయచేసి ఎంపికలలో ఒకటి ఎంచుకోండి."
+  unsupported_media:
+    en: "Sorry, I can only read text messages right now. Please type your message."
+    hi: "माफ़ कीजिए, अभी मैं सिर्फ़ टेक्स्ट पढ़ सकता हूँ। कृपया लिखकर बताइए।"
+    te: "క్షమించండి, ప్రస్తుతం నేను టెక్స్ట్ మాత్రమే చదవగలను. దయచేసి టైప్ చేయండి."
+  slot_unavailable:
+    en: "Sorry, that is no longer available. Please choose another."
+    hi: "माफ़ कीजिए, वह अब उपलब्ध नहीं है। कृपया दूसरा चुनें।"
+    te: "క్షమించండి, అది ఇప్పుడు అందుబాటులో లేదు. దయచేసి వేరొకటి ఎంచుకోండి."
+  restart:
+    en: "No problem, let's start again."
+    hi: "ठीक है, दोबारा शुरू करते हैं।"
+    te: "సరే, మళ్ళీ మొదలుపెడదాం."
+  medical_refusal:
+    en: "Sorry, I can't give medical advice. Our staff will help you."
+    hi: "माफ़ कीजिए, मैं चिकित्सा सलाह नहीं दे सकता। हमारा स्टाफ आपकी मदद करेगा।"
+    te: "క్షమించండి, నేను వైద్య సలహా ఇవ్వలేను. మా సిబ్బంది మీకు సహాయం చేస్తారు."
+  handoff:
+    en: "Connecting you to our staff."
+    hi: "मैं आपको हमारे स्टाफ से जोड़ रहा हूँ।"
+    te: "మా సిబ్బందికి కనెక్ట్ చేస్తున్నాను."
+  handoff_closed:
+    en: "We are closed right now. Our staff will reply as soon as we open."
+    hi: "हम अभी बंद हैं। खुलते ही हमारा स्टाफ आपको जवाब देगा।"
+    te: "మేము ప్రస్తుతం మూసి ఉన్నాము. తెరిచిన వెంటనే మా సిబ్బంది మీకు సమాధానమిస్తారు."
+  dont_know:
+    en: "I'm sorry, I don't have that information. I can connect you to our staff."
+    hi: "माफ़ कीजिए, मेरे पास यह जानकारी नहीं है। मैं आपको हमारे स्टाफ से जोड़ सकता हूँ।"
+    te: "క్షమించండి, నా దగ్గర ఆ సమాచారం లేదు. నేను మిమ్మల్ని మా సిబ్బందితో కనెక్ట్ చేయగలను."
+  recap:                      # first reply when a customer returns to an EXPIRED conversation
+    en: "Welcome back! Last time we were working on: {flow_name}."
+    hi: "वापसी पर स्वागत है! पिछली बार हम यह कर रहे थे: {flow_name}।"
+    te: "తిరిగి స్వాగతం! గత సారి మనం ఇది చేస్తున్నాం: {flow_name}."
+  reminder:                   # free-form nudge, only sent inside the 24h window
+    en: "Just checking in: would you like to continue? Reply here and we'll pick up where we left off."
+    hi: "बस पूछ रहे थे: क्या आप जारी रखना चाहेंगे? यहाँ जवाब दें, हम वहीं से आगे बढ़ेंगे।"
+    te: "మీరు కొనసాగించాలనుకుంటున్నారా? ఇక్కడ సమాధానం ఇవ్వండి, ఎక్కడ ఆపామో అక్కడి నుండి కొనసాగిద్దాం."
+  voice_choose:               # spoken before reading a list of options on a phone call
+    en: "Say the number or the name."
+    hi: "नंबर या नाम बोलिए।"
+    te: "నంబర్ లేదా పేరు చెప్పండి."
+  service_error:
+    en: "Sorry, something went wrong on our side. Our staff will help you."
+    hi: "माफ़ कीजिए, हमारी तरफ़ से कुछ गड़बड़ हुई। हमारा स्टाफ आपकी मदद करेगा।"
+    te: "క్షమించండి, మా వైపు ఏదో సమస్య వచ్చింది. మా సిబ్బంది మీకు సహాయం చేస్తారు."
